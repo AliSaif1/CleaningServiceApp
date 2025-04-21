@@ -1,4 +1,5 @@
-import { db, auth } from '../firebase.js'; 
+import { db, auth } from '../firebase.js';
+import axios from 'axios';
 
 class AdminAuthController {
     static async registerAdmin(req, res) {
@@ -43,10 +44,27 @@ class AdminAuthController {
                 return res.status(400).json({ message: "Email and password are required." });
             }
 
-            const user = await auth.getUserByEmail(email);
-            res.status(200).json({ message: "Admin logged in successfully.", user: user });
+            // Call Firebase REST API to sign in
+            const response = await axios.post(
+                `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${process.env.FIREBASE_WEB_API_KEY}`,
+                {
+                    email,
+                    password,
+                    returnSecureToken: true
+                }
+            );
+
+            const { idToken, refreshToken, localId } = response.data;
+
+            res.status(200).json({
+                message: "Admin logged in successfully.",
+                token: idToken,
+                refreshToken,
+                uid: localId
+            });
         } catch (error) {
-            res.status(500).json({ message: "Server error.", error: error.message });
+            const errorMsg = error.response?.data?.error?.message || error.message;
+            return res.status(401).json({ message: "Login failed.", error: errorMsg });
         }
     }
 }
