@@ -67,6 +67,67 @@ class AdminAuthController {
             return res.status(401).json({ message: "Login failed.", error: errorMsg });
         }
     }
+
+    // Google Sign-Up or Login (Backend)
+    static async googleSignUp(req, res) {
+        try {
+            const { idToken } = req.body;  // The ID token sent from the client
+
+            if (!idToken) {
+                return res.status(400).json({ message: "Google ID token is required." });
+            }
+
+            // Verify the ID token using Firebase Admin SDK
+            const decodedToken = await auth.verifyIdToken(idToken);
+            const { uid, email, name } = decodedToken;
+
+            // Check if the user already exists in Firestore
+            const userRef = db.collection('users').doc(uid);
+            const userDoc = await userRef.get();
+
+            if (!userDoc.exists) {
+                // If user doesn't exist, create a new user record
+                await userRef.set({
+                    name,
+                    email,
+                    role: 'admin',  // Set default role or use a value passed from client
+                    createdAt: new Date(),
+                });
+            }
+
+            res.status(200).json({
+                message: "Google login successful.",
+                uid,
+                email,
+                name,
+                token: idToken  // Send the ID token back to the client
+            });
+        } catch (error) {
+            console.error('Google login error:', error);
+            res.status(500).json({ message: "Server error during Google sign-in.", error: error.message });
+        }
+    }
+
+    static async logoutAdmin(req, res) {
+        try {
+            const { uid } = req.params;
+
+            if (!uid) {
+                return res.status(400).json({ message: "User ID (uid) is required to logout." });
+            }
+
+            // Revoke refresh tokens for the user
+            await auth.revokeRefreshTokens(uid);
+
+            return res.status(200).json({
+                message: "Logout successful. All future sessions will require re-login.",
+                uid
+            });
+        } catch (error) {
+            console.error("Logout Error:", error);
+            return res.status(500).json({ message: "Server error during logout.", error: error.message });
+        }
+    }
 }
 
 export default AdminAuthController;
