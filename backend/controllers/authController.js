@@ -1,42 +1,51 @@
 import { db, auth } from '../firebase.js';
 import axios from 'axios';
 
-class AdminAuthController {
-    static async registerAdmin(req, res) {
+class UserAuthController {
+    static async register(req, res) {
         try {
             if (!req.body || Object.keys(req.body).length === 0) {
                 return res.status(400).json({ message: "Request body is missing." });
             }
 
-            const { name, email, password, role } = req.body;
+            const { name, email, password, role, address } = req.body;
 
             if (!name || !email || !password || !role) {
-                return res.status(400).json({ message: "Name, email, role and password are required." });
+                return res.status(400).json({ message: "Name, email, role, and password are required." });
             }
 
-            // Create a new user using Firebase Authentication
+            // Create a new user in Firebase Auth
             const userRecord = await auth.createUser({
                 email,
                 password,
                 displayName: name,
             });
 
-            // Optionally, you can add additional user information to Firestore (if needed)
-            await db.collection('users').doc(userRecord.uid).set({
+            // Save to Firestore
+            const userData = {
                 name,
                 email,
                 role,
-                createdAt: new Date(),
-            });
+                createdAt: new Date()
+            };
 
-            // Send success response
-            res.status(201).json({ message: "Admin registered successfully.", user: userRecord });
+            // Add address only if it's provided
+            if (address) {
+                userData.address = address;
+            }
+
+            await db.collection('users').doc(userRecord.uid).set(userData);
+
+            res.status(201).json({
+                message: `${role.charAt(0).toUpperCase() + role.slice(1)} registered successfully.`,
+                user: userRecord
+            });
         } catch (error) {
             res.status(500).json({ message: "Server error.", error: error.message });
         }
     }
 
-    static async loginAdmin(req, res) {
+    static async loginUser(req, res) {
         try {
             const { email, password } = req.body;
 
@@ -108,7 +117,7 @@ class AdminAuthController {
         }
     }
 
-    static async logoutAdmin(req, res) {
+    static async logoutUser(req, res) {
         try {
             const { uid } = req.params;
 
@@ -130,4 +139,4 @@ class AdminAuthController {
     }
 }
 
-export default AdminAuthController;
+export default UserAuthController;
