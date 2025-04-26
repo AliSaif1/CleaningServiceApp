@@ -1,5 +1,5 @@
 import { Router } from "express";
-import ServiceControler from "../../../controllers/ServiceControler.js";
+import ServiceControler from "../../../controllers/admin/ServiceControler.js";
 import verifyToken from "../../../middleware/verifyToken.js";
 
 const serviceRoute = Router();

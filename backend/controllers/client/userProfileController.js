@@ -1,4 +1,4 @@
-import { db, auth } from '../firebase.js';
+import { db, auth } from '../../firebase.js';
 
 class userProfileController {
     // Get user profile by UID

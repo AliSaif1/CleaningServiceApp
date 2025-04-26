@@ -1,4 +1,4 @@
-import { db } from '../firebase.js';
+import { db } from '../../firebase.js';
 
 class ServiceController {
     static async addService(req, res) {
