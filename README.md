@@ -73,7 +73,7 @@ It allows **users** to:
 | **Frontend (Web)**   | React.js, Tailwind CSS                        |
 | **Frontend (Mobile)**| React Native                                  |
 | **Backend**          | Node.js, Express.js                           |
-| **Database**         | MongoDB (Bookings, Payments, Users), Firebase Firestore (Chats) |
+| **Database**         | Firebase (Bookings, Payments, Users), Firebase Firestore (Chats) |
 | **Authentication**   | Firebase Auth + JWT                           |
 | **Payments**         | Stripe                                        |
 | **Notifications**    | Firebase Cloud Messaging (FCM)                |
